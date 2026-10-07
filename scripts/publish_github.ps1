@@ -23,8 +23,11 @@ Write-Host "GitHub user: $user"
 
 # Create repo if missing
 $exists = $false
+$prevEap = $ErrorActionPreference
+$ErrorActionPreference = "Continue"
 gh repo view "$user/$repoName" 2>$null | Out-Null
 if ($LASTEXITCODE -eq 0) { $exists = $true }
+$ErrorActionPreference = $prevEap
 
 if (-not $exists) {
     gh repo create $repoName --public --source=. --remote=origin --description "UniyaOver - Instant Replay for Windows (NVIDIA NVENC). Offline. (c) UNIYA."
