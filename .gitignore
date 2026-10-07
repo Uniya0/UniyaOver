@@ -20,3 +20,13 @@ Desktop.ini
 
 # Local tooling (PortableGit, etc.)
 /.tools/
+
+# Never commit binaries / packed releases into git history
+*.dll
+*.exe
+!scripts/*.bat
+/dist/UniyaOver/
+/dist/UniyaOver-Setup.exe
+/dist/UniyaOver-Setup-*.exe
+/dist/payload.uopk
+/dist/UniyaOverSetup/
