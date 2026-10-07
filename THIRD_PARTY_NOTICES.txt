@@ -1,0 +1,28 @@
+Third-party notices
+===================
+
+FFmpeg (LGPL)
+-------------
+This product dynamically links against FFmpeg shared libraries (avcodec,
+avformat, avutil, swresample, swscale) from a BtbN win64 lgpl-shared build.
+
+FFmpeg is licensed under the GNU Lesser General Public License (LGPL) v2.1+
+/ LGPL v3 as shipped with the binary package. Full text is in:
+
+  third_party/ffmpeg/LICENSE.txt
+  (also copied next to UniyaOver as FFMPEG-LICENSE.txt)
+
+Source for the FFmpeg binaries used here:
+  https://github.com/BtbN/FFmpeg-Builds
+
+You can replace the DLLs with another compatible LGPL FFmpeg shared build.
+
+NVIDIA NVENC
+------------
+Hardware encoding uses NVIDIA's NVENC API through FFmpeg. NVIDIA drivers and
+NVENC are subject to NVIDIA's own terms; they are not part of the UniyaOver
+proprietary source tree.
+
+UniyaOver itself
+----------------
+Copyright (c) 2026 UNIYA. All rights reserved. See LICENSE.

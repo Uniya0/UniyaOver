@@ -1,0 +1,22 @@
+# Build artifacts
+/build/
+/out/
+/.vs/
+/cmake-build-*/
+
+# IDE / OS
+.idea/
+.vscode/
+*.user
+*.suo
+Thumbs.db
+Desktop.ini
+
+# Large local deps (download BtbN lgpl-shared into third_party/ffmpeg)
+/third_party/ffmpeg/
+/third_party/ffmpeg-gpl/
+/third_party/ffmpeg.bak/
+/third_party/*.zip
+
+# Local tooling (PortableGit, etc.)
+/.tools/

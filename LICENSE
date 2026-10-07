@@ -1,0 +1,42 @@
+UniyaOver — Proprietary Software License
+========================================
+
+Copyright (c) 2026 UNIYA. All rights reserved.
+
+UniyaOver (the "Software"), including its source code, binaries, installer,
+name, branding, and documentation, is the proprietary property of UNIYA.
+
+Granted rights
+--------------
+You may download and use the official UniyaOver binaries (including the
+installer) for personal or internal use on your own computers.
+
+You may NOT, without prior written permission from UNIYA:
+  - redistribute, reupload, or resell the Software (free or paid);
+  - publish modified or rebranded versions as your own product;
+  - remove or alter copyright / authorship notices;
+  - claim authorship of UniyaOver or present it as someone else's work;
+  - use the name "UniyaOver", "UNIYA", logos, or branding in a way that
+    suggests endorsement or that a fork is the official product.
+
+Source code
+-----------
+If source code is made available (e.g. on GitHub), it is for transparency
+and review only, unless UNIYA states otherwise in writing. Viewing source
+does not grant redistribution or relicensing rights.
+
+Third-party components
+----------------------
+FFmpeg shared libraries shipped with UniyaOver remain under their own LGPL
+license. See THIRD_PARTY_NOTICES.txt and FFMPEG-LICENSE.txt. This proprietary
+license applies to UniyaOver itself, not to FFmpeg.
+
+Contact
+-------
+Telegram: https://t.me/UNIYA0
+
+NO WARRANTY
+-----------
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND. IN NO EVENT
+SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER
+LIABILITY ARISING FROM USE OF THE SOFTWARE.
