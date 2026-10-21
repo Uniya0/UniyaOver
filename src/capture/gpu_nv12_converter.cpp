@@ -2,7 +2,7 @@
 
 #include "util/log.h"
 
-#include <d3d11.h>
+#include <d3d11_1.h>
 #include <wrl/client.h>
 
 #include <string>
@@ -95,6 +95,25 @@ bool GpuNv12Converter::init(ID3D11Device* device, ID3D11DeviceContext* context, 
         ir::log::warn("CreateVideoProcessor failed, hr=" + std::to_string(hr));
         shutdown();
         return false;
+    }
+
+    // Desktop is full-range sRGB; encode as BT.709 limited range (16-235), which is what the
+    // encoder signals and what every player expects. Driver defaults leave the range
+    // undefined and NVIDIA then writes full-range samples, which players crush.
+    ComPtr<ID3D11VideoContext1> video_context1;
+    if (SUCCEEDED(impl_->video_context.As(&video_context1))) {
+        video_context1->VideoProcessorSetStreamColorSpace1(
+            impl_->processor.Get(), 0, DXGI_COLOR_SPACE_RGB_FULL_G22_NONE_P709);
+        video_context1->VideoProcessorSetOutputColorSpace1(
+            impl_->processor.Get(), DXGI_COLOR_SPACE_YCBCR_STUDIO_G22_LEFT_P709);
+    } else {
+        D3D11_VIDEO_PROCESSOR_COLOR_SPACE in_cs{};
+        in_cs.RGB_Range = 0;  // 0-255
+        impl_->video_context->VideoProcessorSetStreamColorSpace(impl_->processor.Get(), 0, &in_cs);
+        D3D11_VIDEO_PROCESSOR_COLOR_SPACE out_cs{};
+        out_cs.YCbCr_Matrix = 1;  // BT.709
+        out_cs.Nominal_Range = D3D11_VIDEO_PROCESSOR_NOMINAL_RANGE_16_235;
+        impl_->video_context->VideoProcessorSetOutputColorSpace(impl_->processor.Get(), &out_cs);
     }
 
     D3D11_TEXTURE2D_DESC nv12_desc{};

@@ -1,5 +1,6 @@
 #include "util/capability_probe.h"
 
+#include "util/i18n.h"
 #include "util/log.h"
 
 #include <dxgi.h>
@@ -365,15 +366,20 @@ std::wstring utf8_to_w(const std::string& s) {
 }
 
 std::wstring status_line(const HardwareProfile& p) {
+    using ir::i18n::tr;
     if (!p.has_nvidia) {
-        return L"Железо: NVIDIA не найдена — запись недоступна";
+        return tr(
+            L"Железо: NVIDIA не найдена — запись недоступна",
+            L"Hardware: no NVIDIA GPU found — recording unavailable");
     }
     if (!p.capture_ready) {
-        return L"Железо: NVENC не открылся (обнови драйвер / FFmpeg)";
+        return tr(
+            L"Железо: NVENC не открылся (обнови драйвер / FFmpeg)",
+            L"Hardware: NVENC failed to open (update the driver / FFmpeg)");
     }
-    std::wstring line = L"Железо: ";
+    std::wstring line = tr(L"Железо: ", L"Hardware: ");
     line += utf8_to_w(p.nvidia.name);
-    line += L" · до ";
+    line += tr(L" · до ", L" · up to ");
     line += std::to_wstring(p.nvenc.recommended_max_fps);
     line += L" FPS";
     line += L" · ";

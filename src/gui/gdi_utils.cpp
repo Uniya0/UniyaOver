@@ -1,8 +1,67 @@
 #include "gui/gdi_utils.h"
 
 #include <algorithm>
+#include <unordered_map>
 
 namespace ir::gui {
+namespace {
+
+// Heap-owned and freed only via release_gdi_cache(): a static destructor would run after
+// GdiplusShutdown and crash on exit.
+struct FontCache {
+    Gdiplus::FontFamily* family = nullptr;
+    std::unordered_map<uint32_t, Gdiplus::Font*> fonts;
+};
+FontCache* g_font_cache = nullptr;
+
+Gdiplus::Font* cached_font(float size_pt, bool bold) {
+    if (!g_font_cache) {
+        g_font_cache = new FontCache();
+        g_font_cache->family = new Gdiplus::FontFamily(L"Segoe UI");
+    }
+    const uint32_t key = (static_cast<uint32_t>(size_pt * 100.0f + 0.5f) << 1) | (bold ? 1u : 0u);
+    auto it = g_font_cache->fonts.find(key);
+    if (it != g_font_cache->fonts.end()) {
+        return it->second;
+    }
+    auto* font = new Gdiplus::Font(
+        g_font_cache->family,
+        size_pt,
+        bold ? Gdiplus::FontStyleBold : Gdiplus::FontStyleRegular,
+        Gdiplus::UnitPoint);
+    g_font_cache->fonts.emplace(key, font);
+    return font;
+}
+
+}  // namespace
+
+void release_gdi_cache() {
+    if (!g_font_cache) {
+        return;
+    }
+    for (auto& [key, font] : g_font_cache->fonts) {
+        delete font;
+    }
+    delete g_font_cache->family;
+    delete g_font_cache;
+    g_font_cache = nullptr;
+}
+
+uint32_t mix_argb(uint32_t a, uint32_t b, float t) {
+    t = (std::max)(0.0f, (std::min)(1.0f, t));
+    uint32_t out = 0;
+    for (int shift = 0; shift < 32; shift += 8) {
+        const float ca = static_cast<float>((a >> shift) & 0xFF);
+        const float cb = static_cast<float>((b >> shift) & 0xFF);
+        out |= static_cast<uint32_t>(ca + (cb - ca) * t + 0.5f) << shift;
+    }
+    return out;
+}
+
+uint32_t with_alpha(uint32_t c, float alpha) {
+    const float a = static_cast<float>((c >> 24) & 0xFF) * (std::max)(0.0f, (std::min)(1.0f, alpha));
+    return (c & 0x00FFFFFFu) | (static_cast<uint32_t>(a + 0.5f) << 24);
+}
 
 std::wstring utf8_to_wide(const std::string& s) {
     if (s.empty()) {
@@ -80,12 +139,7 @@ void draw_text(
     bool bold,
     Gdiplus::StringAlignment align_h,
     Gdiplus::StringAlignment align_v) {
-    Gdiplus::FontFamily family(L"Segoe UI");
-    Gdiplus::Font font(
-        &family,
-        size_pt,
-        bold ? Gdiplus::FontStyleBold : Gdiplus::FontStyleRegular,
-        Gdiplus::UnitPoint);
+    Gdiplus::Font* font = cached_font(size_pt, bold);
     Gdiplus::SolidBrush brush(argb(color_argb));
     Gdiplus::StringFormat fmt;
     fmt.SetAlignment(align_h);
@@ -93,7 +147,7 @@ void draw_text(
     fmt.SetTrimming(Gdiplus::StringTrimmingEllipsisCharacter);
     // Allow descenders (y, g, p) to paint outside the layout box — avoids clipped glyphs.
     fmt.SetFormatFlags(Gdiplus::StringFormatFlagsNoClip);
-    g.DrawString(text.c_str(), -1, &font, r, &fmt, &brush);
+    g.DrawString(text.c_str(), -1, font, r, &fmt, &brush);
 }
 
 bool point_in_rect(int x, int y, const RECT& r) {

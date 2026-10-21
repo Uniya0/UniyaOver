@@ -132,6 +132,10 @@ bool write_clip(
     vpar->height = video_config.height;
     vpar->format = AV_PIX_FMT_NV12;
     vpar->bit_rate = video_config.bitrate;
+    vpar->color_range = AVCOL_RANGE_MPEG;
+    vpar->color_space = AVCOL_SPC_BT709;
+    vpar->color_primaries = AVCOL_PRI_BT709;
+    vpar->color_trc = AVCOL_TRC_BT709;
 
     if (!video_extradata.bytes.empty()) {
         vpar->extradata = static_cast<uint8_t*>(

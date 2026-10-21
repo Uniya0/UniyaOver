@@ -16,6 +16,12 @@ std::wstring utf8_to_wide(const std::string& s);
 std::string wide_to_utf8(const std::wstring& s);
 
 Gdiplus::Color argb(uint32_t c);
+// Per-channel lerp of two ARGB colors, t in [0, 1].
+uint32_t mix_argb(uint32_t a, uint32_t b, float t);
+uint32_t with_alpha(uint32_t c, float alpha);
+
+// Frees cached fonts; call before GdiplusShutdown.
+void release_gdi_cache();
 
 void fill_round_rect(
     Gdiplus::Graphics& g,

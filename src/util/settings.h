@@ -42,6 +42,9 @@ struct AppSettings {
     // 0 small, 1 medium, 2 large.
     int toast_size = 1;
 
+    // "ru" | "en"; empty = follow the Windows UI language.
+    std::string language;
+
     // false = show interactive guide on next launch.
     bool onboarding_done = false;
 };

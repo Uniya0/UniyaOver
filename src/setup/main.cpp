@@ -949,6 +949,7 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE, PWSTR cmd, int) {
         instance,
         nullptr);
     if (!hwnd) {
+        ir::gui::release_gdi_cache();
         Gdiplus::GdiplusShutdown(g_gdiplus);
         return 1;
     }
@@ -959,6 +960,7 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE, PWSTR cmd, int) {
         DispatchMessageW(&msg);
     }
 
+    ir::gui::release_gdi_cache();
     Gdiplus::GdiplusShutdown(g_gdiplus);
     CoUninitialize();
     return 0;

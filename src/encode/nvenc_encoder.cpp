@@ -66,6 +66,11 @@ bool NvencEncoder::open(const EncoderConfig& config) {
     impl_->codec->bit_rate = config.bitrate;
     impl_->codec->gop_size = config.gop_frames;
     impl_->codec->max_b_frames = 0;
+    // Must match the RGB->NV12 conversion (GPU video processor and swscale fallback).
+    impl_->codec->color_range = AVCOL_RANGE_MPEG;
+    impl_->codec->colorspace = AVCOL_SPC_BT709;
+    impl_->codec->color_primaries = AVCOL_PRI_BT709;
+    impl_->codec->color_trc = AVCOL_TRC_BT709;
     // Put codec headers in extradata so every saved MP4 can start on a later GOP.
     impl_->codec->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
 
@@ -222,6 +227,8 @@ bool NvencEncoder::encode_bgra(
             ir::log::error("sws_getContext failed");
             return false;
         }
+        const int* bt709 = sws_getCoefficients(SWS_CS_ITU709);
+        sws_setColorspaceDetails(impl_->sws, bt709, 1, bt709, 0, 0, 1 << 16, 1 << 16);
         impl_->src_w = width;
         impl_->src_h = height;
     }

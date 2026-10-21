@@ -1,6 +1,7 @@
 #include "util/devices.h"
 
 #include "gui/gdi_utils.h"
+#include "util/i18n.h"
 #include "util/log.h"
 
 #include <dxgi.h>
@@ -116,7 +117,7 @@ std::vector<MonitorInfo> list_monitors() {
                 m.index,
                 m.width,
                 m.height,
-                m.is_primary ? L" (основной)" : L"");
+                m.is_primary ? ir::i18n::tr(L" (основной)", L" (primary)") : L"");
             m.label = buf;
             out.push_back(std::move(m));
         }

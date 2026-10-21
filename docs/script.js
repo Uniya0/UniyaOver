@@ -9,7 +9,7 @@
     ru: {
       "meta.title": "UniyaOver — Instant Replay для Windows",
       "nav.how": "Как работает", "nav.features": "Возможности", "nav.hotkeys": "Хоткеи", "nav.faq": "FAQ", "nav.download": "Скачать",
-      "hero.badge": "v1.1 · Windows · NVIDIA NVENC",
+      "hero.badge": "v1.2 · Windows · NVIDIA NVENC",
       "hero.title": "Лучший момент<br><span>уже записан.</span>",
       "hero.sub": "UniyaOver тихо держит в памяти последние секунды экрана. Нажал хоткей — и клип уже лежит в MP4. Без аккаунта, без облака, без лишнего.",
       "hero.cta": "Скачать для Windows",
@@ -71,7 +71,7 @@
     en: {
       "meta.title": "UniyaOver — Instant Replay for Windows",
       "nav.how": "How it works", "nav.features": "Features", "nav.hotkeys": "Hotkeys", "nav.faq": "FAQ", "nav.download": "Download",
-      "hero.badge": "v1.1 · Windows · NVIDIA NVENC",
+      "hero.badge": "v1.2 · Windows · NVIDIA NVENC",
       "hero.title": "Your best moment<br><span>is already saved.</span>",
       "hero.sub": "UniyaOver quietly keeps the last seconds of your screen in memory. Hit a hotkey and the clip is already an MP4. No account, no cloud, no bloat.",
       "hero.cta": "Download for Windows",

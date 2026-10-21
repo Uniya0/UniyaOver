@@ -31,6 +31,7 @@ add_executable(instant_replay WIN32
     src/util/settings.cpp
     src/util/devices.cpp
     src/util/capability_probe.cpp
+    src/util/i18n.cpp
     src/input/hotkey.cpp
     src/capture/desktop_duplicator.cpp
     src/capture/gpu_nv12_converter.cpp

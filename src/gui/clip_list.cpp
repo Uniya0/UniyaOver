@@ -1,6 +1,7 @@
 #include "gui/clip_list.h"
 
 #include "gui/gdi_utils.h"
+#include "util/i18n.h"
 #include "util/paths.h"
 
 #define WIN32_LEAN_AND_MEAN
@@ -105,7 +106,7 @@ std::wstring free_space_display(const std::wstring& path_on_volume) {
     }
     const double gb = static_cast<double>(avail.QuadPart) / (1024.0 * 1024.0 * 1024.0);
     wchar_t buf[64];
-    std::swprintf(buf, 64, L"Свободно: %.1f ГБ", gb);
+    std::swprintf(buf, 64, ir::i18n::tr(L"Свободно: %.1f ГБ", L"Free: %.1f GB"), gb);
     return buf;
 }
 

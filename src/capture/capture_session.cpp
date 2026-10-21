@@ -65,7 +65,9 @@ void CaptureSession::notify_clip_saved(bool ok, bool region, double seconds) con
 
 bool CaptureSession::arm() {
     if (ready_.load()) {
-        ir::log::info("Already buffering (~30s rolling in RAM). Ctrl+Shift+X to save.");
+        ir::log::info(
+            "Already buffering (~" + std::to_string(settings_.buffer_sec) + "s rolling in RAM). " +
+            ir::settings::hotkey_label(settings_.hk_save) + " to save.");
         return true;
     }
     if (running_.load()) {

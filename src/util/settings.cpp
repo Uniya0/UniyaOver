@@ -145,6 +145,10 @@ bool load_file(AppSettings& s) {
     }
     extract_int(body, "toast_position", s.toast_position);
     extract_int(body, "toast_size", s.toast_size);
+    extract_string(body, "language", s.language);
+    if (s.language != "ru" && s.language != "en") {
+        s.language.clear();
+    }
     if (s.toast_position < 0 || s.toast_position > 5) {
         s.toast_position = 2;
     }
@@ -264,6 +268,7 @@ bool save(const AppSettings& s) {
         << "  \"toast_enabled\": " << (s.toast_enabled ? 1 : 0) << ",\n"
         << "  \"toast_position\": " << s.toast_position << ",\n"
         << "  \"toast_size\": " << s.toast_size << ",\n"
+        << "  \"language\": \"" << json_escape(s.language) << "\",\n"
         << "  \"onboarding_done\": " << (s.onboarding_done ? 1 : 0) << "\n"
         << "}\n";
     ir::log::info("Saved config: " + path);

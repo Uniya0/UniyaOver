@@ -7,6 +7,7 @@
 #include "gui/save_toast.h"
 #include "util/capability_probe.h"
 #include "util/devices.h"
+#include "util/i18n.h"
 #include "util/settings.h"
 
 #include <Shellapi.h>
@@ -100,8 +101,22 @@ private:
     void paint_library(Gdiplus::Graphics& g);
     void paint_settings(Gdiplus::Graphics& g);
     void paint_clips_panel(Gdiplus::Graphics& g, const Gdiplus::RectF& area);
-    void paint_clip_rows(Gdiplus::Graphics& g, const Gdiplus::RectF& list_area, int max_rows);
+    void paint_clip_rows(
+        Gdiplus::Graphics& g, const Gdiplus::RectF& list_area, int max_rows, uint32_t bg);
+    void paint_buffer_meter(Gdiplus::Graphics& g, const Gdiplus::RectF& r, float appear);
     void paint_onboarding(Gdiplus::Graphics& g);
+
+    // Animation helpers (valid only inside on_paint).
+    // Eases the value stored under `key` toward `target`; first use snaps to target.
+    float smooth(uint32_t key, float target, float speed = 14.0f, float eps = 0.004f);
+    // 0..1 eased hover amount; also marks `r` as clickable (hand cursor).
+    float hover_amount(const Gdiplus::RectF& r);
+    // Eased 0..1 progress of the current page/tab entrance.
+    float page_progress(float delay_ms, float duration_ms);
+    void update_anim_timer();
+    void on_mouse_move(int x, int y);
+    void set_language(ir::i18n::Lang lang);
+    void flash_hotkey(int index);
 
     void start_onboarding();
     void finish_onboarding(bool mark_done);
@@ -136,6 +151,9 @@ private:
     RECT tab_devices_{};
     RECT tab_clips_{};
     RECT tab_notify_{};
+    RECT lang_ru_hit_{};
+    RECT lang_en_hit_{};
+    RECT home_hk_hit_[4]{};
     RECT toast_on_hit_{};
     RECT toast_off_hit_{};
     RECT toast_size_hit_[3]{};
@@ -189,6 +207,33 @@ private:
     std::thread thumb_thread_;
     std::atomic<bool> thumb_stop_{false};
     int clip_refresh_ticks_ = 0;
+
+    struct AnimValue {
+        float value = 0.0f;
+        uint32_t seen = 0;
+    };
+    std::unordered_map<uint32_t, AnimValue> anim_;
+    uint32_t frame_no_ = 0;
+    ULONGLONG now_ms_ = 0;
+    ULONGLONG frame_ms_ = 0;
+    float frame_dt_ = 0.0f;
+    bool anim_busy_ = false;
+    bool anim_timer_on_ = false;
+    bool painting_tour_ = false;
+    Page painted_page_ = Page::Home;
+    SettingsTab painted_tab_ = SettingsTab::Quality;
+    TourStep painted_tour_ = TourStep::None;
+    ULONGLONG page_enter_ms_ = 0;
+    ULONGLONG tour_enter_ms_ = 0;
+    ULONGLONG armed_since_ms_ = 0;
+    ULONGLONG new_clip_ms_ = 0;
+    ULONGLONG flash_ms_[4]{};
+    std::wstring newest_clip_;
+    bool clips_scanned_ = false;
+    POINT mouse_{-10000, -10000};
+    bool mouse_tracking_ = false;
+    int hot_index_ = -1;
+    std::vector<RECT> hot_rects_;
 
     ULONG_PTR gdiplus_token_ = 0;
 };

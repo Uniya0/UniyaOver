@@ -2,6 +2,7 @@
 #include "gui/app_window.h"
 #include "gui/gdi_utils.h"
 #include "util/capability_probe.h"
+#include "util/i18n.h"
 #include "util/log.h"
 #include "util/paths.h"
 #include "util/settings.h"
@@ -63,11 +64,13 @@ int APIENTRY wWinMain(
     ir::settings::AppSettings settings =
         ir::settings::load(static_cast<int>(argv_ptrs.size()), argv_ptrs.data());
 
+    ir::i18n::set_language(ir::i18n::from_code(settings.language));
+
     const ir::hw::HardwareProfile hw = ir::hw::probe();
     ir::hw::clamp_settings(settings, hw);
     ir::settings::save(settings);
 
-    ir::log::info("UniyaOver v1.1.0 — Instant Replay (NVENC + WASAPI/AAC)");
+    ir::log::info("UniyaOver v1.2.0 — Instant Replay (NVENC + WASAPI/AAC)");
     ir::log::info("Hardware: " + ir::hw::describe(hw));
     ir::log::info(ir::settings::describe(settings));
 
