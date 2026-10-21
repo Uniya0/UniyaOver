@@ -11,6 +11,7 @@
 #include <atomic>
 #include <cstdint>
 #include <condition_variable>
+#include <functional>
 #include <memory>
 #include <mutex>
 #include <string>
@@ -29,8 +30,19 @@ class AudioRingBuffer;
 
 namespace ir::capture {
 
+struct ClipSavedEvent {
+    bool ok = false;
+    bool region = false;
+    double seconds = 0.0;
+};
+
 class CaptureSession {
 public:
+    // Invoked from the export thread; the handler must be thread-safe (e.g. PostMessage).
+    // Set once before arm().
+    using ClipSavedHandler = std::function<void(const ClipSavedEvent&)>;
+    void set_on_clip_saved(ClipSavedHandler handler) { on_clip_saved_ = std::move(handler); }
+
     CaptureSession() = default;
     ~CaptureSession();
 
@@ -80,6 +92,7 @@ private:
         std::atomic<uint64_t>* pcm_frames_total);
     void join_save_thread();
     void signal_init(bool ok);
+    void notify_clip_saved(bool ok, bool region, double seconds) const;
     void clear_frozen_locked();
 
     ir::settings::AppSettings settings_{};
@@ -108,6 +121,7 @@ private:
     std::condition_variable freeze_cv_;
     std::unique_ptr<FrozenClip> frozen_;
     std::atomic<bool> save_in_progress_{false};
+    ClipSavedHandler on_clip_saved_;
 };
 
 }  // namespace ir::capture

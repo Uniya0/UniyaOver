@@ -140,6 +140,17 @@ bool load_file(AppSettings& s) {
     extract_int(body, "monitor_index", s.monitor_index);
     extract_string(body, "audio_device_id", s.audio_device_id);
     extract_string(body, "clips_folder", s.clips_folder);
+    if (extract_int(body, "toast_enabled", v)) {
+        s.toast_enabled = (v != 0);
+    }
+    extract_int(body, "toast_position", s.toast_position);
+    extract_int(body, "toast_size", s.toast_size);
+    if (s.toast_position < 0 || s.toast_position > 5) {
+        s.toast_position = 2;
+    }
+    if (s.toast_size < 0 || s.toast_size > 2) {
+        s.toast_size = 1;
+    }
 
     // Existing installs without the key should not be forced into the tour again.
     if (body.find("\"onboarding_done\"") == std::string::npos) {
@@ -250,6 +261,9 @@ bool save(const AppSettings& s) {
         << "  \"monitor_index\": " << s.monitor_index << ",\n"
         << "  \"audio_device_id\": \"" << json_escape(s.audio_device_id) << "\",\n"
         << "  \"clips_folder\": \"" << json_escape(s.clips_folder) << "\",\n"
+        << "  \"toast_enabled\": " << (s.toast_enabled ? 1 : 0) << ",\n"
+        << "  \"toast_position\": " << s.toast_position << ",\n"
+        << "  \"toast_size\": " << s.toast_size << ",\n"
         << "  \"onboarding_done\": " << (s.onboarding_done ? 1 : 0) << "\n"
         << "}\n";
     ir::log::info("Saved config: " + path);

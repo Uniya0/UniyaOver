@@ -67,7 +67,7 @@ int APIENTRY wWinMain(
     ir::hw::clamp_settings(settings, hw);
     ir::settings::save(settings);
 
-    ir::log::info("UniyaOver v1.0.0 — Instant Replay (NVENC + WASAPI/AAC)");
+    ir::log::info("UniyaOver v1.1.0 — Instant Replay (NVENC + WASAPI/AAC)");
     ir::log::info("Hardware: " + ir::hw::describe(hw));
     ir::log::info(ir::settings::describe(settings));
 

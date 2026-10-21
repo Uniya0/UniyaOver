@@ -5,7 +5,7 @@
 ; Expects a packed folder at dist\UniyaOver (run scripts\pack_dist.ps1 first).
 
 #define MyAppName "UniyaOver"
-#define MyAppVersion "1.0.0"
+#define MyAppVersion "1.1.0"
 #define MyAppPublisher "UNIYA"
 #define MyAppURL "https://t.me/UNIYA0"
 #define MyAppExeName "UniyaOver.exe"

@@ -25,6 +25,10 @@ namespace {
 constexpr UINT_PTR kTimerStatus = 1;
 constexpr UINT kWmTrayIcon = WM_USER + 200;
 constexpr UINT kWmThumbReady = WM_USER + 201;
+// wParam: bit0 = ok, bit1 = region. lParam: clip length in 0.1 s.
+constexpr UINT kWmClipSaved = WM_USER + 202;
+constexpr WPARAM kClipSavedOk = 1;
+constexpr WPARAM kClipSavedRegion = 2;
 constexpr UINT kTrayId = 1;
 // 16:9 thumbnail (2x for crisp draw into 86x48 UI slot).
 constexpr int kThumbW = 172;
@@ -62,10 +66,25 @@ bool same_binding(const ir::settings::HotkeyBinding& a, const ir::settings::Hotk
     return a.vk == b.vk && a.modifiers == b.modifiers;
 }
 
+float toast_size_factor(int size) {
+    constexpr float kFactors[] = {0.8f, 1.0f, 1.3f};
+    return kFactors[(std::max)(0, (std::min)(2, size))];
+}
+
+std::wstring clip_length_label(double seconds) {
+    const int total = (std::max)(1, static_cast<int>(std::lround(seconds)));
+    if (total < 60) {
+        return std::to_wstring(total) + L" с";
+    }
+    const int sec = total % 60;
+    return std::to_wstring(total / 60) + (sec < 10 ? L":0" : L":") + std::to_wstring(sec);
+}
+
 }  // namespace
 
 AppWindow::~AppWindow() {
     stop_thumbnail_worker();
+    save_toast_.destroy();
     tray_remove();
     if (hwnd_) {
         ir::hotkey::uninstall(hwnd_);
@@ -154,11 +173,8 @@ bool AppWindow::create(
             if (tour_step_ != TourStep::None) {
                 return;
             }
-            if (capture_) {
-                capture_->request_save();
-                refresh_clips();
-                InvalidateRect(hwnd_, nullptr, FALSE);
-            }
+            request_full_save();
+            InvalidateRect(hwnd_, nullptr, FALSE);
         },
         [this] {
             if (tour_step_ != TourStep::None) {
@@ -184,6 +200,15 @@ bool AppWindow::create(
         DestroyWindow(hwnd_);
         hwnd_ = nullptr;
         return false;
+    }
+
+    save_toast_.create(instance_);
+    apply_toast_style();
+    if (capture_) {
+        capture_->set_on_clip_saved([hwnd = hwnd_](const ir::capture::ClipSavedEvent& e) {
+            const WPARAM flags = (e.ok ? kClipSavedOk : 0) | (e.region ? kClipSavedRegion : 0);
+            PostMessageW(hwnd, kWmClipSaved, flags, static_cast<LPARAM>(std::lround(e.seconds * 10.0)));
+        });
     }
 
     sync_clips_path();
@@ -504,10 +529,7 @@ void AppWindow::tray_show_menu() {
             }
             break;
         case kTraySave:
-            if (capture_) {
-                capture_->request_save();
-                refresh_clips();
-            }
+            request_full_save();
             break;
         case kTrayRegion:
             begin_region_save();
@@ -559,6 +581,9 @@ LRESULT AppWindow::wnd_proc(UINT msg, WPARAM w_param, LPARAM l_param) {
             ingest_ready_thumbnails();
             InvalidateRect(hwnd_, nullptr, FALSE);
             return 0;
+        case kWmClipSaved:
+            on_clip_saved(w_param, l_param);
+            return 0;
         case WM_TIMER:
             if (w_param == kTimerStatus) {
                 // Pick up newly finished saves without spamming the disk every tick.
@@ -600,6 +625,7 @@ LRESULT AppWindow::wnd_proc(UINT msg, WPARAM w_param, LPARAM l_param) {
         case WM_DESTROY:
             KillTimer(hwnd_, kTimerStatus);
             stop_thumbnail_worker();
+            save_toast_.destroy();
             tray_remove();
             ir::hotkey::uninstall(hwnd_);
             hwnd_ = nullptr;
@@ -780,9 +806,75 @@ bool AppWindow::commit_hotkey(unsigned vk, unsigned modifiers) {
     return true;
 }
 
+void AppWindow::request_full_save() {
+    if (!capture_) {
+        return;
+    }
+    if (!capture_->is_armed()) {
+        show_idle_toast();
+        return;
+    }
+    capture_->request_save();
+    refresh_clips();
+}
+
+void AppWindow::apply_toast_style() {
+    save_toast_.set_style(
+        static_cast<SaveToast::Position>(settings_.toast_position),
+        toast_size_factor(settings_.toast_size));
+}
+
+void AppWindow::show_toast_preview() {
+    if (!settings_.toast_enabled) {
+        return;
+    }
+    save_toast_.show(
+        SaveToast::Kind::Saved,
+        L"Сохранено",
+        L"так будет выглядеть уведомление",
+        MonitorFromWindow(hwnd_, MONITOR_DEFAULTTONEAREST));
+}
+
+void AppWindow::show_idle_toast() {
+    if (!settings_.toast_enabled) {
+        return;
+    }
+    save_toast_.show(
+        SaveToast::Kind::Warning,
+        L"Буфер не запущен",
+        utf8(ir::settings::hotkey_label(settings_.hk_arm)) + L" — старт",
+        RECT{});
+}
+
+void AppWindow::on_clip_saved(WPARAM flags, LPARAM deciseconds) {
+    refresh_clips();
+    InvalidateRect(hwnd_, nullptr, FALSE);
+    if (!settings_.toast_enabled) {
+        return;
+    }
+
+    const RECT monitor = capture_ ? capture_->capture_desktop_rect() : RECT{};
+    const bool region = (flags & kClipSavedRegion) != 0;
+    if ((flags & kClipSavedOk) != 0) {
+        const std::wstring what = region ? L"область" : L"весь экран";
+        save_toast_.show(
+            SaveToast::Kind::Saved,
+            L"Сохранено",
+            what + L" · " + clip_length_label(static_cast<double>(deciseconds) / 10.0),
+            monitor);
+    } else if (!region && deciseconds == 0) {
+        save_toast_.show(
+            SaveToast::Kind::Warning, L"Буфер ещё пуст", L"подождите пару секунд", monitor);
+    } else {
+        save_toast_.show(
+            SaveToast::Kind::Error, L"Не удалось сохранить", L"подробности в логе", monitor);
+    }
+}
+
 void AppWindow::begin_region_save() {
     if (!capture_ || !capture_->is_armed()) {
         ir::log::warn("Region save: сначала запустите буфер");
+        show_idle_toast();
         return;
     }
     const int cw = capture_->capture_width();
@@ -903,6 +995,46 @@ void AppWindow::on_click(int x, int y) {
             settings_tab_ = SettingsTab::Clips;
             InvalidateRect(hwnd_, nullptr, FALSE);
         }
+        return;
+    }
+    if (point_in_rect(x, y, tab_notify_)) {
+        if (settings_tab_ != SettingsTab::Notify) {
+            cancel_hotkey_listen();
+            settings_tab_ = SettingsTab::Notify;
+            InvalidateRect(hwnd_, nullptr, FALSE);
+        }
+        return;
+    }
+
+    if (point_in_rect(x, y, toast_preview_hit_)) {
+        show_toast_preview();
+        return;
+    }
+    bool toast_changed = false;
+    if (point_in_rect(x, y, toast_on_hit_) && !settings_.toast_enabled) {
+        settings_.toast_enabled = true;
+        toast_changed = true;
+    } else if (point_in_rect(x, y, toast_off_hit_) && settings_.toast_enabled) {
+        settings_.toast_enabled = false;
+        toast_changed = true;
+    }
+    for (int i = 0; i < 3 && !toast_changed; ++i) {
+        if (point_in_rect(x, y, toast_size_hit_[i])) {
+            settings_.toast_size = i;
+            toast_changed = true;
+        }
+    }
+    for (int i = 0; i < 6 && !toast_changed; ++i) {
+        if (point_in_rect(x, y, toast_pos_hit_[i])) {
+            settings_.toast_position = i;
+            toast_changed = true;
+        }
+    }
+    if (toast_changed) {
+        apply_toast_style();
+        apply_and_save();
+        InvalidateRect(hwnd_, nullptr, FALSE);
+        show_toast_preview();
         return;
     }
 
@@ -1067,6 +1199,16 @@ void AppWindow::on_paint() {
     tab_hotkeys_ = {};
     tab_devices_ = {};
     tab_clips_ = {};
+    tab_notify_ = {};
+    toast_on_hit_ = {};
+    toast_off_hit_ = {};
+    for (RECT& r : toast_size_hit_) {
+        r = {};
+    }
+    for (RECT& r : toast_pos_hit_) {
+        r = {};
+    }
+    toast_preview_hit_ = {};
     tour_next_hit_ = {};
     tour_skip_hit_ = {};
     tour_help_hit_ = {};
@@ -1098,7 +1240,7 @@ void AppWindow::paint_sidebar(Gdiplus::Graphics& g) {
 
     draw_brand_u(g, Gdiplus::RectF(18, 20, 32, 32), kText);
     draw_text(g, L"UniyaOver", Gdiplus::RectF(56, 18, 130, 26), kText, 11.0f, true);
-    draw_text(g, L"v1.0.0", Gdiplus::RectF(56, 42, 130, 18), kTextMuted, 9.0f, false);
+    draw_text(g, L"v1.1.0", Gdiplus::RectF(56, 42, 130, 18), kTextMuted, 9.0f, false);
 
     const float nav_y0 = 90.0f;
     auto paint_nav = [&](float y, const wchar_t* label, bool active, RECT& hit) {
@@ -1405,8 +1547,139 @@ void AppWindow::paint_settings(Gdiplus::Graphics& g) {
     tab_btn(tx, tab_w, L"Устройства", settings_tab_ == SettingsTab::Devices, tab_devices_);
     tx += tab_w + tab_gap;
     tab_btn(tx, tab_w, L"Клипы", settings_tab_ == SettingsTab::Clips, tab_clips_);
+    tx += tab_w + tab_gap;
+    tab_btn(tx, tab_w, L"Уведомление", settings_tab_ == SettingsTab::Notify, tab_notify_);
 
     float y = tab_y + 52.0f;
+
+    auto choice_btn = [&](float x, float w, const wchar_t* label, bool on, RECT& hit) {
+        Gdiplus::RectF r(x, y, w, 34);
+        fill_round_rect(g, r, 10, on ? kAccent : kCard);
+        draw_round_rect(g, r, 10, kBorder, 1.0f);
+        draw_text(
+            g,
+            label,
+            r,
+            on ? 0xFF0B0B0B : kText,
+            10.5f,
+            true,
+            Gdiplus::StringAlignmentCenter,
+            Gdiplus::StringAlignmentCenter);
+        hit = to_rect(r);
+    };
+
+    if (settings_tab_ == SettingsTab::Notify) {
+        const bool enabled = settings_.toast_enabled;
+        draw_text(g, L"Уведомление о сохранении", Gdiplus::RectF(left + 28, y, 400, 20), kText, 11.0f, true);
+        y += 26;
+        choice_btn(left + 28, 90, L"Вкл", enabled, toast_on_hit_);
+        choice_btn(left + 126, 90, L"Выкл", !enabled, toast_off_hit_);
+
+        y += 52;
+        draw_text(g, L"Размер", Gdiplus::RectF(left + 28, y, 200, 20), enabled ? kText : kTextMuted, 11.0f, true);
+        y += 26;
+        const wchar_t* size_labels[] = {L"Маленький", L"Средний", L"Большой"};
+        for (int i = 0; i < 3; ++i) {
+            choice_btn(
+                left + 28 + 128.0f * static_cast<float>(i),
+                120,
+                size_labels[i],
+                settings_.toast_size == i,
+                toast_size_hit_[i]);
+        }
+
+        y += 52;
+        draw_text(
+            g,
+            L"Положение на экране",
+            Gdiplus::RectF(left + 28, y, 300, 20),
+            enabled ? kText : kTextMuted,
+            11.0f,
+            true);
+        y += 26;
+
+        Gdiplus::RectF screen(left + 28, y, 272, 153);
+        fill_round_rect(g, screen, 12, kCard);
+        draw_round_rect(g, screen, 12, kBorder, 1.0f);
+        {
+            Gdiplus::SolidBrush stand(argb(kBorder));
+            g.FillRectangle(&stand, screen.X + screen.Width * 0.5f - 14, screen.GetBottom(), 28.0f, 10.0f);
+            fill_round_rect(
+                g,
+                Gdiplus::RectF(screen.X + screen.Width * 0.5f - 44, screen.GetBottom() + 10, 88, 5),
+                2.5f,
+                kBorder);
+        }
+
+        constexpr float pill_w = 64.0f;
+        constexpr float pill_h = 20.0f;
+        constexpr float inset = 12.0f;
+        for (int i = 0; i < 6; ++i) {
+            const int col = i % 3;
+            const int row = i / 3;
+            const float px = col == 0 ? screen.X + inset
+                           : col == 1 ? screen.X + (screen.Width - pill_w) * 0.5f
+                                      : screen.GetRight() - inset - pill_w;
+            const float py = row == 0 ? screen.Y + inset : screen.GetBottom() - inset - pill_h;
+            const Gdiplus::RectF pill(px, py, pill_w, pill_h);
+            const bool on = settings_.toast_position == i;
+            if (on) {
+                fill_round_rect(g, pill, pill_h * 0.5f, enabled ? kAccent : kTextMuted);
+                const float cx = pill.X + 10.0f;
+                const float cy = pill.Y + pill_h * 0.5f;
+                Gdiplus::SolidBrush dot(argb(0xFF0B0B0B));
+                g.FillEllipse(&dot, cx - 6.0f, cy - 6.0f, 12.0f, 12.0f);
+                Gdiplus::Pen check(argb(enabled ? kAccent : kTextMuted), 1.6f);
+                check.SetStartCap(Gdiplus::LineCapRound);
+                check.SetEndCap(Gdiplus::LineCapRound);
+                check.SetLineJoin(Gdiplus::LineJoinRound);
+                const Gdiplus::PointF mark[] = {{cx - 2.6f, cy + 0.2f}, {cx - 0.6f, cy + 2.2f}, {cx + 2.8f, cy - 2.0f}};
+                g.DrawLines(&check, mark, 3);
+                fill_round_rect(g, Gdiplus::RectF(pill.X + 21, cy - 4.0f, 32, 3), 1.5f, 0xFF0B0B0B);
+                fill_round_rect(g, Gdiplus::RectF(pill.X + 21, cy + 1.5f, 22, 2.5f), 1.25f, 0xFF4A4A4A);
+            } else {
+                fill_round_rect(g, pill, pill_h * 0.5f, 0xFF222222);
+                draw_round_rect(g, pill, pill_h * 0.5f, 0xFF3A3A3A, 1.0f);
+            }
+            Gdiplus::RectF hit = pill;
+            hit.Inflate(6.0f, 6.0f);
+            toast_pos_hit_[i] = to_rect(hit);
+        }
+
+        const float side_x = screen.GetRight() + 28;
+        const float side_w = (std::max)(200.0f, (std::min)(340.0f, area.GetRight() - 28 - side_x));
+        if (enabled) {
+            Gdiplus::RectF preview(side_x, y, 190, 34);
+            fill_round_rect(g, preview, 10, kAccent);
+            draw_text(
+                g,
+                L"Показать пример",
+                preview,
+                0xFF0B0B0B,
+                10.5f,
+                true,
+                Gdiplus::StringAlignmentCenter,
+                Gdiplus::StringAlignmentCenter);
+            toast_preview_hit_ = to_rect(preview);
+        }
+        draw_text(
+            g,
+            enabled ? L"Пример появится на мониторе, где открыто это окно."
+                    : L"Уведомления выключены — сохранение работает молча.",
+            Gdiplus::RectF(side_x, y + 48, side_w, 40),
+            kTextDim,
+            9.5f,
+            false);
+        draw_text(
+            g,
+            L"В клипы уведомление не попадает. Поверх игр в эксклюзивном полноэкранном "
+            L"режиме Windows его не покажет — выбирайте «оконный без рамки».",
+            Gdiplus::RectF(side_x, y + 92, side_w, 64),
+            kTextMuted,
+            9.0f,
+            false);
+        return;
+    }
 
     if (settings_tab_ == SettingsTab::Quality) {
         draw_text(g, L"Кодек", Gdiplus::RectF(left + 28, y, 200, 20), kText, 11.0f, true);

@@ -46,6 +46,7 @@ add_executable(instant_replay WIN32
     src/gui/clip_list.cpp
     src/gui/clip_thumbnail.cpp
     src/gui/region_selector.cpp
+    src/gui/save_toast.cpp
     src/gui/app_window.cpp
 )
 

@@ -35,6 +35,13 @@ struct AppSettings {
     // Empty = default Videos\instant-replay.
     std::string clips_folder;
 
+    // On-screen save notification.
+    bool toast_enabled = true;
+    // 0 top-left, 1 top-center, 2 top-right, 3 bottom-left, 4 bottom-center, 5 bottom-right.
+    int toast_position = 2;
+    // 0 small, 1 medium, 2 large.
+    int toast_size = 1;
+
     // false = show interactive guide on next launch.
     bool onboarding_done = false;
 };

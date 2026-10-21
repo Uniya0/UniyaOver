@@ -4,6 +4,7 @@
 #include "gui/clip_list.h"
 #include "gui/clip_thumbnail.h"
 #include "gui/gdi_utils.h"
+#include "gui/save_toast.h"
 #include "util/capability_probe.h"
 #include "util/devices.h"
 #include "util/settings.h"
@@ -43,7 +44,7 @@ public:
 
 private:
     enum class Page { Home, Library, Settings };
-    enum class SettingsTab { Quality, Hotkeys, Devices, Clips };
+    enum class SettingsTab { Quality, Hotkeys, Devices, Clips, Notify };
     enum class ListenTarget { None, Arm, Save, Stop, Region };
     enum class TourStep {
         None = 0,
@@ -68,6 +69,11 @@ private:
     void on_listen_keyup(WPARAM vk);
     bool commit_hotkey(unsigned vk, unsigned modifiers);
     void begin_region_save();
+    void request_full_save();
+    void on_clip_saved(WPARAM flags, LPARAM deciseconds);
+    void show_idle_toast();
+    void apply_toast_style();
+    void show_toast_preview();
     void refresh_clips();
     void refresh_device_lists();
     void apply_and_save();
@@ -120,6 +126,7 @@ private:
     int height_ = 720;
     bool in_tray_ = false;
     NOTIFYICONDATAW tray_{};
+    SaveToast save_toast_;
 
     RECT nav_home_{};
     RECT nav_lib_{};
@@ -128,6 +135,12 @@ private:
     RECT tab_hotkeys_{};
     RECT tab_devices_{};
     RECT tab_clips_{};
+    RECT tab_notify_{};
+    RECT toast_on_hit_{};
+    RECT toast_off_hit_{};
+    RECT toast_size_hit_[3]{};
+    RECT toast_pos_hit_[6]{};
+    RECT toast_preview_hit_{};
     RECT codec_auto_{};
     RECT codec_h264_{};
     RECT codec_hevc_{};

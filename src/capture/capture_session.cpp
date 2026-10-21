@@ -13,6 +13,7 @@
 #include "util/settings.h"
 #include "util/time.h"
 
+#include <algorithm>
 #include <chrono>
 #include <sstream>
 #include <string>
@@ -54,6 +55,12 @@ void CaptureSession::signal_init(bool ok) {
         ready_.store(ok);
     }
     init_cv_.notify_all();
+}
+
+void CaptureSession::notify_clip_saved(bool ok, bool region, double seconds) const {
+    if (on_clip_saved_) {
+        on_clip_saved_(ClipSavedEvent{ok, region, seconds});
+    }
 }
 
 bool CaptureSession::arm() {
@@ -98,7 +105,9 @@ bool CaptureSession::arm() {
         }
         return false;
     }
-    ir::log::info("State: BUFFERING (Ctrl+Shift+X = save, Ctrl+Shift+S = stop)");
+    ir::log::info(
+        "State: BUFFERING (" + ir::settings::hotkey_label(settings_.hk_save) + " = save, " +
+        ir::settings::hotkey_label(settings_.hk_stop) + " = stop)");
     return true;
 }
 
@@ -239,7 +248,11 @@ bool CaptureSession::complete_region_save(RECT crop) {
         if (!ok) {
             ir::log::error("Failed to write region clip " + path);
         }
+        const int fps = (std::max)(1, job->enc_cfg.fps);
+        const double seconds =
+            static_cast<double>(job->packets.back().pts + 1 - job->packets.front().pts) / fps;
         save_in_progress_.store(false);
+        notify_clip_saved(ok, true, seconds);
     });
     ir::log::info("Region export started (from frozen buffer)");
     return true;
@@ -587,6 +600,7 @@ void CaptureSession::video_thread_main() {
             auto vsnap = ring.snapshot();
             if (vsnap.packets.empty()) {
                 ir::log::warn("Video ring empty — buffer a few seconds after start");
+                notify_clip_saved(false, false, 0.0);
             } else {
                 const std::string path = ir::paths::make_clip_path();
                 const auto vextra = encoder.extradata();
@@ -632,7 +646,8 @@ void CaptureSession::video_thread_main() {
                      vextra,
                      packets = std::move(vsnap.packets),
                      clip_audio = std::move(clip_audio),
-                     have_audio]() mutable {
+                     have_audio,
+                     seconds = t1 - t0]() mutable {
                         const ir::export_mp4::ClipAudio* audio_ptr =
                             have_audio ? &clip_audio : nullptr;
                         const bool ok =
@@ -641,6 +656,7 @@ void CaptureSession::video_thread_main() {
                             ir::log::error("Failed to write " + path);
                         }
                         save_in_progress_.store(false);
+                        notify_clip_saved(ok, false, seconds);
                     });
             }
         }
