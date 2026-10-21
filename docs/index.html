@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>UniyaOver — Instant Replay для Windows</title>
+  <meta name="description" content="UniyaOver — лёгкий offline Instant Replay для Windows. Кольцевой буфер, сохранение клипа по хоткею, NVIDIA NVENC. Без аккаунта и облака.">
+  <meta name="theme-color" content="#0b0b0b">
+  <link rel="icon" type="image/png" href="assets/icon.png">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="UniyaOver — Instant Replay для Windows">
+  <meta property="og:description" content="Лучший момент уже записан. Offline, без аккаунта, NVIDIA NVENC.">
+  <meta property="og:image" content="assets/mark-uo.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="bg" aria-hidden="true">
+    <div class="bg-grid"></div>
+    <div class="bg-glow"></div>
+    <div class="bg-grain"></div>
+  </div>
+
+  <header class="nav" id="top">
+    <div class="nav-inner">
+      <a class="brand" href="#top" aria-label="UniyaOver">
+        <span class="brand-mark">
+          <svg viewBox="0 0 40 40" aria-hidden="true">
+            <rect x="1" y="1" width="38" height="38" rx="10" class="bm-bg"/>
+            <circle cx="20" cy="20" r="13.5" class="bm-ring"/>
+            <text x="20" y="24.4" text-anchor="middle" class="bm-text">Uo</text>
+          </svg>
+        </span>
+        <span class="brand-name">UniyaOver</span>
+      </a>
+      <nav class="nav-links" aria-label="Main">
+        <a href="#how" data-i18n="nav.how">Как работает</a>
+        <a href="#features" data-i18n="nav.features">Возможности</a>
+        <a href="#hotkeys" data-i18n="nav.hotkeys">Хоткеи</a>
+        <a href="#faq" data-i18n="nav.faq">FAQ</a>
+      </nav>
+      <div class="nav-right">
+        <div class="lang" role="group" aria-label="Language">
+          <button type="button" data-lang="ru" class="is-active">RU</button>
+          <button type="button" data-lang="en">EN</button>
+        </div>
+        <a class="btn btn-sm btn-primary" href="https://github.com/Uniya0/UniyaOver/releases/latest/download/UniyaOver-Setup.exe" data-i18n="nav.download">Скачать</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- HERO -->
+    <section class="hero">
+      <div class="container hero-inner">
+        <div class="hero-copy">
+          <a class="pill reveal" href="https://github.com/Uniya0/UniyaOver/releases/latest">
+            <span class="pill-dot"></span>
+            <span data-i18n="hero.badge">v1.0 · Windows · NVIDIA NVENC</span>
+            <span class="pill-arrow">→</span>
+          </a>
+          <h1 class="hero-title reveal" data-i18n="hero.title" data-i18n-html>Лучший момент<br><span>уже записан.</span></h1>
+          <p class="hero-sub reveal" data-i18n="hero.sub">UniyaOver тихо держит в памяти последние секунды экрана. Нажал хоткей — и клип уже лежит в MP4. Без аккаунта, без облака, без лишнего.</p>
+          <div class="hero-cta reveal">
+            <a class="btn btn-primary btn-lg" href="https://github.com/Uniya0/UniyaOver/releases/latest/download/UniyaOver-Setup.exe">
+              <svg viewBox="0 0 24 24" class="ico" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M4 19h16" /></svg>
+              <span data-i18n="hero.cta">Скачать для Windows</span>
+            </a>
+            <a class="btn btn-ghost btn-lg" href="https://github.com/Uniya0/UniyaOver" target="_blank" rel="noopener">
+              <svg viewBox="0 0 24 24" class="ico ico-fill" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 00-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.53-1.33-1.28-1.69-1.28-1.69-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.68 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 015.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.83 1.19 3.09 0 4.41-2.69 5.39-5.25 5.67.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0012 .5z"/></svg>
+              <span>GitHub</span>
+            </a>
+          </div>
+          <p class="hero-meta reveal" data-i18n="hero.meta">Бесплатно · ~125 MB · Windows 10/11 x64</p>
+        </div>
+
+        <!-- App mock -->
+        <div class="app reveal" id="appMock" aria-label="UniyaOver preview">
+          <div class="app-titlebar">
+            <span class="app-title">UniyaOver</span>
+            <span class="app-win"><i></i><i></i><i></i></span>
+          </div>
+          <div class="app-body">
+            <aside class="app-side">
+              <div class="side-item is-active"><span class="side-ico">⌂</span><span data-i18n="app.home">Главная</span></div>
+              <div class="side-item"><span class="side-ico">▦</span><span data-i18n="app.library">Библиотека</span></div>
+              <div class="side-item"><span class="side-ico">⚙</span><span data-i18n="app.settings">Настройки</span></div>
+              <div class="side-foot">© UNIYA</div>
+            </aside>
+            <div class="app-main">
+              <div class="app-status">
+                <span class="status-dot"></span>
+                <span class="status-label">BUFFERING</span>
+                <span class="status-time" id="mockTimer">00:30</span>
+              </div>
+              <div class="app-logo">
+                <svg viewBox="0 0 120 120" aria-hidden="true">
+                  <circle cx="60" cy="60" r="52" class="ring-track"/>
+                  <circle cx="60" cy="60" r="52" class="ring-run"/>
+                  <text x="60" y="70" text-anchor="middle" class="ring-text">Uo</text>
+                </svg>
+              </div>
+              <div class="app-name">UniyaOver</div>
+              <div class="app-desc" data-i18n="app.desc">Последние 30 секунд экрана — по горячей клавише.</div>
+              <div class="app-hk">
+                <div class="hk-row"><kbd>Ctrl+Shift+R</kbd><span data-i18n="hk.arm.short">старт буфера</span></div>
+                <div class="hk-row is-hot" id="mockSaveRow"><kbd>Ctrl+Shift+X</kbd><span data-i18n="hk.save.short">сохранить клип</span></div>
+                <div class="hk-row"><kbd>Ctrl+Shift+A</kbd><span data-i18n="hk.region.short">область</span></div>
+                <div class="hk-row"><kbd>Ctrl+Shift+S</kbd><span data-i18n="hk.stop.short">стоп буфера</span></div>
+              </div>
+            </div>
+            <aside class="app-recent">
+              <div class="recent-title" data-i18n="app.recent">Последние записи</div>
+              <div class="recent-list" id="mockClips"></div>
+            </aside>
+          </div>
+          <div class="app-flash" id="mockFlash"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- STATS -->
+    <section class="stats">
+      <div class="container stats-inner">
+        <div class="stat reveal"><b>240</b><span data-i18n="stat.fps">FPS максимум</span></div>
+        <div class="stat reveal"><b>5–120<small>s</small></b><span data-i18n="stat.buffer">длина буфера</span></div>
+        <div class="stat reveal"><b>H.264<small>/</small>HEVC</b><span data-i18n="stat.codec">на NVENC</span></div>
+        <div class="stat reveal"><b>0</b><span data-i18n="stat.accounts">аккаунтов и облаков</span></div>
+      </div>
+    </section>
+
+    <!-- HOW IT WORKS -->
+    <section class="section" id="how">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="eyebrow" data-i18n="how.eyebrow">Как работает</span>
+          <h2 data-i18n="how.title">Кольцевой буфер.<br>Ты решаешь, что сохранить.</h2>
+          <p data-i18n="how.sub">Экран пишется непрерывно, но на диск попадает только то, что ты попросил. Старые секунды просто перезаписываются.</p>
+        </div>
+
+        <div class="demo reveal">
+          <div class="demo-top">
+            <div class="demo-live"><span class="status-dot"></span><span>LIVE</span></div>
+            <label class="demo-slider">
+              <span data-i18n="demo.buffer">Длина буфера</span>
+              <input type="range" id="bufRange" min="5" max="120" step="5" value="30">
+              <output id="bufOut">30 s</output>
+            </label>
+          </div>
+          <div class="demo-canvas-wrap">
+            <canvas id="timeline" aria-hidden="true"></canvas>
+            <div class="demo-labels">
+              <span data-i18n="demo.past">− 2 мин · перезаписано</span>
+              <span data-i18n="demo.now">сейчас</span>
+            </div>
+          </div>
+          <div class="demo-bottom">
+            <button type="button" class="btn btn-primary" id="saveBtn">
+              <span class="kbd-inline">Ctrl+Shift+X</span>
+              <span data-i18n="demo.save">Сохранить клип</span>
+            </button>
+            <span class="demo-hint" data-i18n="demo.hint">или нажми это сочетание прямо на странице</span>
+          </div>
+          <div class="demo-clips" id="demoClips"></div>
+        </div>
+
+        <ol class="steps">
+          <li class="step reveal">
+            <span class="step-n">01</span>
+            <h3 data-i18n="step1.t">Запусти буфер</h3>
+            <p data-i18n="step1.d">Ctrl+Shift+R — UniyaOver начинает держать последние секунды экрана и звука. Статус меняется на BUFFERING.</p>
+          </li>
+          <li class="step reveal">
+            <span class="step-n">02</span>
+            <h3 data-i18n="step2.t">Играй как обычно</h3>
+            <p data-i18n="step2.d">Кодирование идёт на NVENC — отдельном блоке видеокарты. Приложение сидит в трее и не мешает.</p>
+          </li>
+          <li class="step reveal">
+            <span class="step-n">03</span>
+            <h3 data-i18n="step3.t">Случилось что-то крутое?</h3>
+            <p data-i18n="step3.d">Ctrl+Shift+X — готовый MP4 со звуком появляется в библиотеке. Без пост-обработки и ожидания.</p>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- FEATURES -->
+    <section class="section" id="features">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="eyebrow" data-i18n="feat.eyebrow">Возможности</span>
+          <h2 data-i18n="feat.title">Всё нужное.<br>Ничего лишнего.</h2>
+        </div>
+
+        <div class="bento">
+          <article class="card card-wide reveal">
+            <div class="card-visual region-visual" aria-hidden="true">
+              <div class="rv-screen">
+                <div class="rv-sel"><span class="rv-c tl"></span><span class="rv-c tr"></span><span class="rv-c bl"></span><span class="rv-c br"></span><span class="rv-size">1280 × 720</span></div>
+              </div>
+            </div>
+            <div class="card-copy">
+              <h3 data-i18n="f.region.t">Replay области</h3>
+              <p data-i18n="f.region.d">Ctrl+Shift+A — кадр замирает, выделяешь нужный кусок экрана, и в клип попадает только он. Звук и тайминг сохраняются точно.</p>
+            </div>
+          </article>
+
+          <article class="card reveal">
+            <div class="card-icon"><svg viewBox="0 0 24 24"><path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z"/></svg></div>
+            <h3 data-i18n="f.instant.t">Мгновенное сохранение</h3>
+            <p data-i18n="f.instant.d">Буфер уже закодирован — клип пишется на диск за секунды, без перекодирования.</p>
+          </article>
+
+          <article class="card reveal">
+            <div class="card-icon"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M7 10v4M10 9v6M13 10v4M16 11v2"/></svg></div>
+            <h3 data-i18n="f.nvenc.t">NVIDIA NVENC</h3>
+            <p data-i18n="f.nvenc.d">H.264 или HEVC — выбирается автоматически под твою видеокарту. До 240 FPS.</p>
+          </article>
+
+          <article class="card reveal">
+            <div class="card-icon"><svg viewBox="0 0 24 24"><path d="M4 10v4M8 6v12M12 3v18M16 7v10M20 10v4"/></svg></div>
+            <h3 data-i18n="f.audio.t">Звук системы</h3>
+            <p data-i18n="f.audio.d">WASAPI-захват выбранного устройства → AAC. Видео и звук идут синхронно.</p>
+          </article>
+
+          <article class="card reveal">
+            <div class="card-icon"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="8" height="7" rx="1.5"/><rect x="13" y="4" width="8" height="7" rx="1.5"/><rect x="3" y="13" width="8" height="7" rx="1.5"/><rect x="13" y="13" width="8" height="7" rx="1.5"/></svg></div>
+            <h3 data-i18n="f.library.t">Библиотека с превью</h3>
+            <p data-i18n="f.library.d">Все клипы в одном месте, с миниатюрами. Клик — и видео открывается.</p>
+          </article>
+
+          <article class="card reveal">
+            <div class="card-icon"><svg viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6l8-3z"/><path d="M9 12l2 2 4-4"/></svg></div>
+            <h3 data-i18n="f.offline.t">Полностью offline</h3>
+            <p data-i18n="f.offline.d">Ни аккаунта, ни телеметрии, ни загрузок в облако. Клипы остаются только на твоём диске.</p>
+          </article>
+
+          <article class="card card-wide reveal">
+            <div class="card-copy">
+              <h3 data-i18n="f.tune.t">Настраивается под тебя</h3>
+              <p data-i18n="f.tune.d">Монитор, устройство звука, FPS, битрейт, кодек, длина буфера и любые хоткеи. UniyaOver сам предлагает лимиты под твоё железо.</p>
+            </div>
+            <div class="card-visual tune-visual" aria-hidden="true">
+              <div class="tv-row"><span data-i18n="tv.fps">FPS</span><div class="seg"><i>60</i><i class="on">144</i><i>240</i></div></div>
+              <div class="tv-row"><span data-i18n="tv.codec">Кодек</span><div class="seg"><i class="on" data-i18n="tv.auto">Авто</i><i>H.264</i><i>HEVC</i></div></div>
+              <div class="tv-row"><span data-i18n="tv.buffer">Буфер</span><div class="bar"><b style="width:25%"></b></div><em>30 s</em></div>
+              <div class="tv-row"><span data-i18n="tv.bitrate">Битрейт</span><div class="bar"><b style="width:55%"></b></div><em>50 Mbps</em></div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- HOTKEYS -->
+    <section class="section" id="hotkeys">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="eyebrow" data-i18n="hk.eyebrow">Хоткеи</span>
+          <h2 data-i18n="hk.title">Четыре сочетания.<br>Запоминаются за минуту.</h2>
+          <p data-i18n="hk.sub">Попробуй нажать их прямо сейчас. Любое сочетание можно поменять в настройках.</p>
+        </div>
+
+        <div class="keys reveal">
+          <div class="keys-mods">
+            <span class="key key-wide" data-key="Control">Ctrl</span>
+            <span class="plus">+</span>
+            <span class="key key-wide" data-key="Shift">Shift</span>
+            <span class="plus">+</span>
+          </div>
+          <div class="keys-grid">
+            <div class="keycard" data-combo="r">
+              <span class="key">R</span>
+              <div><b data-i18n="hk.arm.t">Старт буфера</b><p data-i18n="hk.arm.d">Начинает держать последние секунды</p></div>
+            </div>
+            <div class="keycard" data-combo="x">
+              <span class="key">X</span>
+              <div><b data-i18n="hk.save.t">Сохранить клип</b><p data-i18n="hk.save.d">Весь экран → MP4 в библиотеку</p></div>
+            </div>
+            <div class="keycard" data-combo="a">
+              <span class="key">A</span>
+              <div><b data-i18n="hk.region.t">Сохранить область</b><p data-i18n="hk.region.d">Заморозить кадр и выделить кусок</p></div>
+            </div>
+            <div class="keycard" data-combo="s">
+              <span class="key">S</span>
+              <div><b data-i18n="hk.stop.t">Стоп буфера</b><p data-i18n="hk.stop.d">Освобождает видеокарту и память</p></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- REQUIREMENTS -->
+    <section class="section" id="req">
+      <div class="container req">
+        <div class="req-col reveal">
+          <span class="eyebrow" data-i18n="req.eyebrow">Требования</span>
+          <h2 data-i18n="req.title">Что нужно для запуска</h2>
+          <ul class="checklist">
+            <li data-i18n="req.os">Windows 10 или 11, 64-бит</li>
+            <li data-i18n="req.gpu">Видеокарта NVIDIA с NVENC (GeForce GTX / RTX)</li>
+            <li data-i18n="req.vc" data-i18n-html><a href="https://aka.ms/vs/17/release/vc_redist.x64.exe" target="_blank" rel="noopener">Visual C++ Redistributable x64</a></li>
+            <li data-i18n="req.disk">~130 MB на диске + место под клипы</li>
+          </ul>
+        </div>
+        <div class="req-col reveal">
+          <span class="eyebrow" data-i18n="honest.eyebrow">Честно</span>
+          <h2 data-i18n="honest.title">Что стоит знать заранее</h2>
+          <ul class="notes">
+            <li><b data-i18n="honest.amd.t">AMD и Intel пока нет.</b> <span data-i18n="honest.amd.d">Без NVENC запись не стартует — приложение честно скажет об этом при запуске.</span></li>
+            <li><b data-i18n="honest.ac.t">Соревновательный античит.</b> <span data-i18n="honest.ac.d">Совместимость с Valorant и подобными не гарантируется. Используй на свой риск.</span></li>
+            <li><b data-i18n="honest.ss.t">SmartScreen.</b> <span data-i18n="honest.ss.d">Сборка пока без цифровой подписи, Windows может предупредить. «Подробнее» → «Выполнить в любом случае».</span></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="section" id="faq">
+      <div class="container narrow">
+        <div class="section-head reveal">
+          <span class="eyebrow">FAQ</span>
+          <h2 data-i18n="faq.title">Частые вопросы</h2>
+        </div>
+        <div class="faq">
+          <details class="reveal">
+            <summary data-i18n="faq.q1">Это бесплатно?</summary>
+            <p data-i18n="faq.a1">Да. Скачать и пользоваться можно бесплатно. Если хочешь поддержать разработку — можно задонатить на itch.io.</p>
+          </details>
+          <details class="reveal">
+            <summary data-i18n="faq.q2">Чем это отличается от NVIDIA App / ShadowPlay?</summary>
+            <p data-i18n="faq.a2">UniyaOver — маленький и сфокусированный: только Instant Replay, без оверлея, аккаунта и фоновых сервисов. Плюс есть сохранение выбранной области экрана.</p>
+          </details>
+          <details class="reveal">
+            <summary data-i18n="faq.q3">Сильно ли падает FPS в играх?</summary>
+            <p data-i18n="faq.a3">Кодирует NVENC — отдельный аппаратный блок видеокарты, поэтому нагрузка на игру минимальна. На слабых картах лучше выбрать 60 FPS и умеренный битрейт.</p>
+          </details>
+          <details class="reveal">
+            <summary data-i18n="faq.q4">Где лежат клипы?</summary>
+            <p data-i18n="faq.a4">По умолчанию в «Видео\instant-replay». Папку можно поменять в настройках.</p>
+          </details>
+          <details class="reveal">
+            <summary data-i18n="faq.q5">Как удалить?</summary>
+            <p data-i18n="faq.a5">Через «Приложения» в Windows или Uninstall.exe в папке установки. Клипы при этом не удаляются.</p>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <!-- FINAL CTA -->
+    <section class="final">
+      <div class="container final-inner reveal">
+        <div class="final-ring" aria-hidden="true">
+          <svg viewBox="0 0 200 200">
+            <circle cx="100" cy="100" r="88" class="ring-track"/>
+            <circle cx="100" cy="100" r="88" class="ring-run"/>
+          </svg>
+          <img src="assets/mark-uo.png" alt="" width="96" height="96">
+        </div>
+        <h2 data-i18n="final.title">Не упусти следующий момент.</h2>
+        <p data-i18n="final.sub">Поставь один раз — дальше UniyaOver просто тихо работает в трее.</p>
+        <a class="btn btn-primary btn-lg" href="https://github.com/Uniya0/UniyaOver/releases/latest/download/UniyaOver-Setup.exe">
+          <svg viewBox="0 0 24 24" class="ico" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M4 19h16" /></svg>
+          <span data-i18n="hero.cta">Скачать для Windows</span>
+        </a>
+        <a class="final-link" href="https://github.com/Uniya0/UniyaOver/releases" target="_blank" rel="noopener" data-i18n="final.all">Все версии и заметки к релизам →</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <img src="assets/icon.png" alt="" width="28" height="28">
+        <span>© 2026 UNIYA</span>
+      </div>
+      <nav class="footer-links">
+        <a href="https://github.com/Uniya0/UniyaOver" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://uniya.itch.io/uniyaover" target="_blank" rel="noopener">itch.io</a>
+        <a href="https://t.me/UNIYA0" target="_blank" rel="noopener">Telegram</a>
+        <a href="https://github.com/Uniya0/UniyaOver/blob/main/LICENSE" target="_blank" rel="noopener" data-i18n="footer.license">Лицензия</a>
+      </nav>
+      <p class="footer-note" data-i18n="footer.note">FFmpeg используется по лицензии LGPL. NVIDIA и NVENC — товарные знаки NVIDIA Corporation; проект с ней не связан.</p>
+    </div>
+  </footer>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
